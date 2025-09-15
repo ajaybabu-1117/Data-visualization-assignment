@@ -1,8 +1,9 @@
 streamlit
 pandas
-plotly
-openpyxl
-pdfplumber
-python-docx
-wordcloud
 matplotlib
+seaborn
+wordcloud
+PyPDF2
+python-docx
+openpyxl
+xlrd
