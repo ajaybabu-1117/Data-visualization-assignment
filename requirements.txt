@@ -1,9 +1,10 @@
 streamlit
 pandas
+plotly
 matplotlib
 seaborn
 wordcloud
-PyPDF2
+pdfplumber
 python-docx
 openpyxl
 xlrd
