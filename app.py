@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.title("📊 Data Visualizer & Analyzer")
+st.title("Data Visualizer & Analyzer")
 
 # -------------------------------
 # Sidebar
@@ -37,15 +37,21 @@ chart_type = st.sidebar.selectbox(
 # Helper Functions
 # -------------------------------
 @st.cache_data
-def get_excel_sheet_names(file):
+def get_excel_sheet_names(file, engine="openpyxl"):
     """Return sheet names from an Excel file."""
-    xls = pd.ExcelFile(file)
+    try:
+        xls = pd.ExcelFile(file, engine=engine)
+    except Exception:
+        xls = pd.ExcelFile(file, engine="xlrd")
     return xls.sheet_names
 
 @st.cache_data
-def read_excel(file, sheet_name):
+def read_excel(file, sheet_name, engine="openpyxl"):
     """Read a specific sheet into a DataFrame."""
-    return pd.read_excel(file, sheet_name=sheet_name)
+    try:
+        return pd.read_excel(file, sheet_name=sheet_name, engine=engine)
+    except Exception:
+        return pd.read_excel(file, sheet_name=sheet_name, engine="xlrd")
 
 @st.cache_data
 def read_csv(file):
@@ -87,7 +93,7 @@ if uploaded_file:
         selected_sheet = st.sidebar.selectbox("Choose a Sheet", sheet_names)
         df = read_excel(uploaded_file, selected_sheet)
 
-        st.subheader(f"📑 Data Preview: {selected_sheet}")
+        st.subheader(f"Data Preview: {selected_sheet}")
         st.dataframe(df.head())
 
         # Column selection
@@ -109,7 +115,7 @@ if uploaded_file:
     elif file_type == "csv":
         # CSV handling
         df = read_csv(uploaded_file)
-        st.subheader("📑 Data Preview")
+        st.subheader("Data Preview")
         st.dataframe(df.head())
 
         cols = st.multiselect("Select Columns to Visualize", df.columns)
@@ -129,13 +135,13 @@ if uploaded_file:
 
     elif file_type == "pdf":
         # PDF text extraction
-        st.subheader("📑 Extracted Text from PDF")
+        st.subheader("Extracted Text from PDF")
         text = extract_text_from_pdf(uploaded_file, 0, 5)
         st.write(text[:2000] + "..." if len(text) > 2000 else text)
 
         if text:
             wc = generate_wordcloud(text)
-            st.subheader("☁ Word Cloud from PDF")
+            st.subheader("Word Cloud from PDF")
             fig, ax = plt.subplots(figsize=(10, 5))
             ax.imshow(wc, interpolation="bilinear")
             ax.axis("off")
@@ -143,13 +149,13 @@ if uploaded_file:
 
     elif file_type == "docx":
         # Word document handling
-        st.subheader("📑 Extracted Text from Word Document")
+        st.subheader("Extracted Text from Word Document")
         text = extract_text_from_docx(uploaded_file)
         st.write(text[:2000] + "..." if len(text) > 2000 else text)
 
         if text:
             wc = generate_wordcloud(text)
-            st.subheader("☁ Word Cloud from Word Document")
+            st.subheader("Word Cloud from Word Document")
             fig, ax = plt.subplots(figsize=(10, 5))
             ax.imshow(wc, interpolation="bilinear")
             ax.axis("off")
