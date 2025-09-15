@@ -37,19 +37,24 @@ chart_type = st.sidebar.selectbox(
 # Helper Functions
 # -------------------------------
 @st.cache_data
-def load_excel(file):
-    return pd.ExcelFile(file)
+def get_excel_sheet_names(file):
+    """Return sheet names from an Excel file."""
+    xls = pd.ExcelFile(file)
+    return xls.sheet_names
 
 @st.cache_data
 def read_excel(file, sheet_name):
+    """Read a specific sheet into a DataFrame."""
     return pd.read_excel(file, sheet_name=sheet_name)
 
 @st.cache_data
 def read_csv(file):
+    """Read CSV into DataFrame."""
     return pd.read_csv(file)
 
 @st.cache_data
 def extract_text_from_pdf(file, start_page=0, end_page=5):
+    """Extract text from PDF within page range."""
     text = ""
     with pdfplumber.open(file) as pdf:
         total_pages = len(pdf.pages)
@@ -61,11 +66,12 @@ def extract_text_from_pdf(file, start_page=0, end_page=5):
 
 @st.cache_data
 def extract_text_from_docx(file):
+    """Extract text from a Word document."""
     doc = Document(file)
     return " ".join([p.text for p in doc.paragraphs if p.text.strip()])
 
-@st.cache_data
 def generate_wordcloud(text):
+    """Generate a WordCloud object."""
     wc = WordCloud(width=800, height=400, background_color="white", max_words=200).generate(text)
     return wc
 
@@ -77,8 +83,7 @@ if uploaded_file:
 
     if file_type in ["xlsx", "xls"]:
         # Excel handling
-        xls = load_excel(uploaded_file)
-        sheet_names = xls.sheet_names
+        sheet_names = get_excel_sheet_names(uploaded_file)
         selected_sheet = st.sidebar.selectbox("Choose a Sheet", sheet_names)
         df = read_excel(uploaded_file, selected_sheet)
 
@@ -88,8 +93,7 @@ if uploaded_file:
         # Column selection
         cols = st.multiselect("Select Columns to Visualize", df.columns)
         if len(cols) >= 2:
-            x_axis = cols[0]
-            y_axis = cols[1]
+            x_axis, y_axis = cols[0], cols[1]
 
             if chart_type == "Bar Chart":
                 fig = px.bar(df, x=x_axis, y=y_axis, title=f"{y_axis} by {x_axis}")
@@ -111,6 +115,7 @@ if uploaded_file:
         cols = st.multiselect("Select Columns to Visualize", df.columns)
         if len(cols) >= 2:
             x_axis, y_axis = cols[0], cols[1]
+
             if chart_type == "Bar Chart":
                 fig = px.bar(df, x=x_axis, y=y_axis)
             elif chart_type == "Pie Chart":
